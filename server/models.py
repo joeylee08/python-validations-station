@@ -18,6 +18,8 @@ class Station(db.Model, SerializerMixin):
     #     return f"<Station {self.name}>"
     
     platforms = db.relationship('Platform', back_populates='station')
+
+    serialize_rules = ('-platforms.station',)
     
     @validates('name')
     def validate_name(self, _, value):
@@ -43,6 +45,8 @@ class Platform(db.Model, SerializerMixin):
     assignments = db.relationship('Assignment', back_populates='platform')
 
     trains = association_proxy('assignments', 'train')
+
+    serialize_rules = ('-station.platforms', '-assignments.platform', '-trains.platforms')
     
     @validates('platform_num')
     def validate_platform(self, _, value):
@@ -68,6 +72,8 @@ class Train(db.Model, SerializerMixin):
     assignments = db.relationship('Assignment', back_populates='train')
 
     platforms = association_proxy('assignments', 'platform')
+
+    serialize_rules = ('-assignments.train', '-platforms.trains')
 
     # def __repr__(self):
     #     return f"<Train {self.name}>"
@@ -106,6 +112,8 @@ class Assignment(db.Model, SerializerMixin):
 
     train = db.relationship('Train', back_populates='assignments')
     platform = db.relationship('Platform', back_populates='assignments')
+
+    serialize_rules = ('-train.assignments', '-platform.assignments')
 
     @validates('departure_time')
     def validate_departure_time(self, _, value):
